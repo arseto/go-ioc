@@ -7,6 +7,27 @@ type objTest struct {
 	description string
 }
 
+func TestIsRegistered(t *testing.T) {
+	Bind("tester", func() interface{} {
+		return &objTest{
+			"test",
+			"default",
+		}
+	})
+
+	registered := IsRegistered("tester")
+
+	if !registered {
+		t.Error("Should be registered")
+	}
+
+	registered = IsRegistered("tester_2")
+
+	if registered {
+		t.Error("Should not be registered")
+	}
+}
+
 func TestBind(t *testing.T) {
 	Bind("tester", func() interface{} {
 		return &objTest{
