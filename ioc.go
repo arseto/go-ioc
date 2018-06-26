@@ -8,25 +8,25 @@ type objectContainer struct {
 	objCache  interface{}
 }
 
-type Ioc struct {
+type ioc struct {
 	container map[string]*objectContainer
 }
 
-func New() *Ioc {
-	return &Ioc{
+func new() *ioc {
+	return &ioc{
 		container: make(map[string]*objectContainer),
 	}
 }
 
-func (c *Ioc) Singleton(key string, inst instantiator) {
+func (c *ioc) singleton(key string, inst instantiator) {
 	c.localBind(key, inst, true)
 }
 
-func (c *Ioc) Bind(key string, inst instantiator) {
+func (c *ioc) bind(key string, inst instantiator) {
 	c.localBind(key, inst, false)
 }
 
-func (c *Ioc) localBind(key string, inst instantiator, singleton bool) {
+func (c *ioc) localBind(key string, inst instantiator, singleton bool) {
 	c.container[key] = &objectContainer{
 		singleton: singleton,
 		inst:      inst,
@@ -34,7 +34,7 @@ func (c *Ioc) localBind(key string, inst instantiator, singleton bool) {
 	}
 }
 
-func (c *Ioc) Make(key string) interface{} {
+func (c *ioc) make(key string) interface{} {
 	single := c.container[key].singleton
 
 	if !single || (c.container[key].objCache == nil) {
@@ -44,29 +44,35 @@ func (c *Ioc) Make(key string) interface{} {
 	return c.container[key].objCache
 }
 
-func (c *Ioc) IsRegistered(key string) bool {
+func (c *ioc) isRegistered(key string) bool {
 	_, ok := c.container[key]
 	return ok
 }
 
-var i *Ioc
+var i *ioc
 
 func init() {
-	i = New()
+	i = new()
 }
 
+//Singleton will register object for single instance,
+//any call in subsequent `Make` method will return same instance.
 func Singleton(key string, inst instantiator) {
-	i.Singleton(key, inst)
+	i.singleton(key, inst)
 }
 
+//Bind will register object to always create new instance,
+//any call in subsequent `Make` method will return new instance.
 func Bind(key string, inst instantiator) {
-	i.Bind(key, inst)
+	i.bind(key, inst)
 }
 
+//IsRegistered checks if a key is already registered in container
 func IsRegistered(key string) bool {
-	return i.IsRegistered(key)
+	return i.isRegistered(key)
 }
 
+//Make calls object from container, whether it's singleton or not
 func Make(key string) interface{} {
-	return i.Make(key)
+	return i.make(key)
 }
